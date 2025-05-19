@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudySum – AI Lecture Summarizer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    p {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 30px;
+    }
+
+    .demo-section {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .demo-video {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .email-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    input[type="email"] {
+      width: 300px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 300px;
+      padding: 10px 15px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1em;
+      text-align: center;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .footer {
+      margin-top: 60px;
+      font-size: 0.9em;
+      text-align: center;
+      color: #888;
+    }
+
+    img.logo {
+      display: block;
+      width: 100px;
+      margin: 0 auto 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Logo -->
+    <img src="assets/logo.svg" alt="StudySum Logo" class="logo" />
+
+    <!-- Title -->
+    <h1>StudySum</h1>
+
+    <!-- Description -->
+    <p>
+      Generate AI-powered summaries of your online lectures instantly.
+    </p>
+
+    <!-- Call to Action -->
+    <p>
+      Paste your Zoom or Meet transcript → get back structured summaries  
+      Export to Markdown, Word, or PDF — no login required.
+    </p>
+
+    <!-- Demo Section -->
+    <div class="demo-section">
+      <h2>Try It Out</h2>
+      <a href="https://your-username.github.io/studysum-webapp/ " target="_blank">
+        <img src="assets/demo-screenshot.png" alt="Demo of StudySum" class="demo-video" />
+      </a>
+    </div>
+
+    <!-- Waitlist Form -->
+    <h2 style="margin-top: 40px;">Join the Beta Program</h2>
+    <p>We'll notify you when we launch the Chrome extension and premium features.</p>
+
+    <form id="waitlistForm">
+      <input type="email" id="email" placeholder="Enter your student email" required />
+      <button type="submit">Get Early Access</button>
+      <div class="status" id="waitlistStatus"></div>
+    </form>
+
+    <!-- Testimonial -->
+    <div class="testimonial" style="margin-top: 40px; font-style: italic;">
+      "I wish I had this during finals week."  
+      – Jane D., Biology Student
+    </div>
+
+    <!-- Link to Web App -->
+    <div style="margin-top: 30px; text-align:center;">
+      <a href="https://your-username.github.io/studysum-webapp/ " target="_blank">
+        Try the Demo Version
+      </a>
+    </div>
+  </div>
+
+  <div class="footer">
+    For educational use only | No data stored long-term<br/>
+    Coming soon to Chrome Web Store
+  </div>
+
+  <script>
+    // Replace with your backend URL from Google Sheets or Airtable
+    const WAITLIST_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec ";
+
+    document.getElementById("waitlistForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById("email");
+      const status = document.getElementById("waitlistStatus");
+      const email = emailInput.value;
+
+      if (!email.includes("@")) {
+        status.innerText = "Please enter a valid email.";
+        status.className = "status error";
+        return;
+      }
+
+      try {
+        const response = await fetch(WAITLIST_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        status.innerText = "Thanks! We'll notify you when we launch.";
+        status.className = "status success";
+        emailInput.value = "";
+      } catch (error) {
+        console.error("Waitlist Error:", error);
+        status.innerText = "Something went wrong. Please try again later.";
+        status.className = "status error";
+      }
+    });
+  </script>
+</body>
+</html>
