@@ -12,11 +12,12 @@
   <!-- CSS -->
   <style>
     :root {
-      --bg: #f4f6f8;
-      --text: #222;
+      --bg: #f0f7ff; /* Soft sky blue background */
+      --text: #1a1a1a;
       --accent: #4A90E2;
       --card-bg: #ffffff;
-      --border: #ddd;
+      --border: #d0e0f0;
+      --blue-tint: #e6f0fb;
     }
 
     [data-theme="dark"] {
@@ -41,6 +42,7 @@
       background: var(--card-bg);
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
     }
 
     h1 {
@@ -61,6 +63,7 @@
       border-radius: 8px;
       resize: vertical;
       font-family: inherit;
+      transition: border-color 0.3s;
     }
 
     label {
@@ -73,6 +76,7 @@
       font-size: 1rem;
       border-radius: 6px;
       border: 1px solid var(--border);
+      width: 100%;
     }
 
     button {
@@ -94,7 +98,7 @@
     #summary {
       margin-top: 1.5rem;
       padding: 1rem;
-      background: #f0f0f0;
+      background: var(--blue-tint);
       border-radius: 8px;
       white-space: pre-wrap;
     }
@@ -129,6 +133,10 @@
     @keyframes bounce {
       0%, 100%   { transform: translateY(0); }
       50%         { transform: translateY(-5px); }
+    }
+
+    svg text {
+      fill: var(--text);
     }
   </style>
 </head>
@@ -228,32 +236,71 @@
       }
     }
 
-    // Export functions stay the same...
-    // Keep your existing export code unchanged
+    // Export as Markdown
+    document.getElementById("exportMarkdown").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText === "Using AI to generate summary..." || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
 
-    // Optional: Add animated success message on export
-    function showSuccessMessage(text) {
-      const success = document.createElement('div');
-      success.style.position = 'fixed';
-      success.style.top = '20px';
-      success.style.right = '20px';
-      success.style.background = 'rgba(74, 144, 226, 0.9)';
-      success.style.color = '#fff';
-      success.style.padding = '10px 20px';
-      success.style.borderRadius = '6px';
-      success.style.zIndex = '1000';
-      success.className = 'success';
-      success.innerText = text;
+      const blob = new Blob([summaryText], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${document.getElementById("subjectSelect").value}_lecture_summary.md`;
+      a.click();
+    });
 
-      document.body.appendChild(success);
+    // Export as Word (.docx)
+    document.getElementById("exportWord").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText === "Using AI to generate summary..." || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
 
-      setTimeout(() => {
-        success.remove();
-      }, 2000);
-    }
+      const docContent = `<h1>${document.getElementById("subjectSelect").value} Summary</h1><pre>${summaryText}</pre>`;
+      
+      mammoth.convertToDocx({
+        arrayBuffer: new TextEncoder().encode(docContent).buffer
+      }).then(result => {
+        const file = new Blob([result.value], {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(file);
+        a.download = `${document.getElementById("subjectSelect").value}_lecture_summary.docx`;
+        a.click();
+      }).catch(err => {
+        alert("Error generating Word file.");
+        console.error(err);
+      });
+    });
 
-    // Example usage:
-    // showSuccessMessage("Summary exported successfully!");
+    // Export as PDF
+    document.getElementById("exportPDF").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText === "Using AI to generate summary..." || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      const lines = summaryText.split("\n");
+
+      let y = 20;
+      lines.forEach(line => {
+        if (y > 270) {
+          pdf.addPage();
+          y = 20;
+        }
+        pdf.text(line, 10, y);
+        y += 10;
+      });
+
+      pdf.save(`${document.getElementById("subjectSelect").value}_lecture_summary.pdf`);
+    });
   </script>
 </body>
 </html>
