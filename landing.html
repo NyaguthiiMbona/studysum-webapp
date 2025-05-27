@@ -94,14 +94,6 @@
       text-align: center;
     }
 
-    .demo img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-    }
-
     .demo iframe {
       width: 100%;
       height: 500px;
@@ -159,6 +151,7 @@
 
   <div class="container">
     <header>
+      <!-- Logo SVG -->
       <svg width="100" height="40" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem;">
         <defs>
           <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -169,3 +162,49 @@
         <path d="M10 30H30L20 10Z" fill="url(#grad1)" />
         <path d="M20 50L10 70H30L20 50Z" fill="url(#grad1)" />
         <text x="40" y="50" font-family="Arial, sans-serif" font-size="24" fill="var(--text)">StudySum</text>
+      </svg>
+
+      <h1>Turn Lecture Transcripts into Study Notes Instantly</h1>
+      <p>StudySum uses AI to turn your lecture transcripts into clean, exportable summaries — perfect for students who want to study smarter, not harder.</p>
+    </header>
+
+    <section class="features">
+      <div class="feature">
+        <h2><span>✅</span>Paste & Generate</h2>
+        <p>Paste any transcript from your class, podcast, or video — and get an instant summary tailored by subject.</p>
+      </div>
+      <div class="feature">
+        <h2><span>📁</span>Export Anywhere</h2>
+        <p>Download your notes in Markdown, Word, or PDF format — or just copy them directly to clipboard.</p>
+      </div>
+      <div class="feature">
+        <h2><span>🧠</span>Student-Friendly Prompts</h2>
+        <p>Whether you're studying Biology, History, or Computer Science, StudySum tailors the summary to your subject.</p>
+      </div>
+      <div class="feature">
+        <h2><span>🌙</span>Dark Mode + Offline Ready</h2>
+        <p>Use StudySum even when internet is spotty — and switch between light/dark mode with one click.</p>
+      </div>
+    </section>
+
+    <section class="demo">
+      <h2>How It Works</h2>
+      <iframe src="https://nyaguthiimbona.github.io/studysum-webapp/ " title="Live StudySum App"></iframe>
+    </section>
+
+    <section class="cta">
+      <h2>Ready to Try StudySum?</h2>
+      <p>Use StudySum today — no login required.</p>
+      <a href="index.html">Try StudySum Now →</a>
+    </section>
+  </div>
+
+  <footer>
+    StudySum – AI-powered summarizer for students<br/>
+    Built with ❤️ using HTML/CSS/AI<br/>
+    <a href="https://github.com/NyaguthiiMbona/studysum-webapp " target="_blank">GitHub</a> · 
+    <a href="mailto:your-email@example.com">Contact</a>
+  </footer>
+
+</body>
+</html>
