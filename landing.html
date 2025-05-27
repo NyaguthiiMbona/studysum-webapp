@@ -4,10 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>StudySum – Turn Lectures into Notes</title>
-  <meta name="description" content="StudySum turns lecture transcripts into structured study notes instantly. Export to Markdown, Word, or PDF. Free for students.">
+  <meta name="description" content="StudySum uses AI to turn lecture transcripts into study notes instantly. Export to Markdown, Word, or PDF. Free for students.">
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-
-  <!-- CSS -->
   <style>
     :root {
       --bg: #f0f7ff;
@@ -15,6 +13,7 @@
       --accent: #4A90E2;
       --card-bg: #ffffff;
       --border: #d0e0f0;
+      --blue-tint: #e6f0fb;
     }
 
     [data-theme="dark"] {
@@ -29,6 +28,7 @@
       font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
+      transition: background 0.3s, color 0.3s;
     }
 
     .container {
@@ -163,7 +163,6 @@
         <path d="M20 50L10 70H30L20 50Z" fill="url(#grad1)" />
         <text x="40" y="50" font-family="Arial, sans-serif" font-size="24" fill="var(--text)">StudySum</text>
       </svg>
-
       <h1>Turn Lecture Transcripts into Study Notes Instantly</h1>
       <p>StudySum uses AI to turn your lecture transcripts into clean, exportable summaries — perfect for students who want to study smarter, not harder.</p>
     </header>
@@ -189,13 +188,15 @@
 
     <section class="demo">
       <h2>How It Works</h2>
+      <!-- Live App Preview -->
       <iframe src="https://nyaguthiimbona.github.io/studysum-webapp/ " title="Live StudySum App"></iframe>
     </section>
 
     <section class="cta">
       <h2>Ready to Try StudySum?</h2>
       <p>Use StudySum today — no login required.</p>
-      <a href="index.html">Try StudySum Now →</a>
+      <!-- 🔗 This is the key link to your live web app -->
+      <a href="https://nyaguthiimbona.github.io/studysum-webapp/ ">Launch StudySum →</a>
     </section>
   </div>
 
