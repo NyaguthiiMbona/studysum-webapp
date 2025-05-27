@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudySum – Turn Lectures into Notes</title>
+  <meta name="description" content="StudySum turns lecture transcripts into structured study notes instantly. Export to Markdown, Word, or PDF. Free for students.">
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <style>
+    :root {
+      --bg: #f0f7ff;
+      --text: #1a1a1a;
+      --accent: #4A90E2;
+      --card-bg: #ffffff;
+      --border: #d0e0f0;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121212;
+      --text: #f9f9f9;
+      --card-bg: #1e1e1e;
+      --accent: #5F50F0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+
+    header h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    header p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.6;
+    }
+
+    .features {
+      display: grid;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .feature {
+      background: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+    }
+
+    .feature h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .demo {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .demo img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .cta a {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .cta a:hover {
+      background: #357ABD;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #888;
+      border-top: 1px solid var(--border);
+      margin-top: 4rem;
+    }
+
+    nav {
+      text-align: right;
+      padding: 1rem 2rem;
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <nav>
+    <a href="index.html">Try StudySum</a>
+  </nav>
+
+  <div class="container">
+    <header>
+      <svg width="100" height="40" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 1rem;">
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:#4A90E2; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#5F50F0; stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M10 30H30L20 10Z" fill="url(#grad1)" />
+        <path d="M20 50L10 70H30L20 50Z" fill="url(#grad1)" />
+        <text x="40" y="50" font-family="Arial, sans-serif" font-size="24" fill="var(--text)">StudySum</text>
+      </svg>
+      <h1>Turn Lecture Transcripts into Study Notes Instantly</h1>
+      <p>StudySum uses AI to turn your lecture transcripts into clean, exportable summaries — perfect for students who want to study smarter, not harder.</p>
+    </header>
+
+    <section class="features">
+      <div class="feature">
+        <h2>✅ Paste & Generate</h2>
+        <p>Paste any transcript from your class, podcast, or video — and get an instant summary tailored by subject.</p>
+      </div>
+      <div class="feature">
+        <h2>📁 Export Anywhere</h2>
+        <p>Download your notes in Markdown, Word, or PDF format — or just copy them directly to clipboard.</p>
+      </div>
+      <div class="feature">
+        <h2>🧠 Student-Friendly Prompts</h2>
+        <p>Whether you're studying Biology, History, or Computer Science, StudySum tailors the summary to your subject.</p>
+      </div>
+      <div class="feature">
+        <h2>🌙 Dark Mode + Offline Ready</h2>
+        <p>Use StudySum even when internet is spotty — and switch between light/dark mode with one click.</p>
+      </div>
+    </section>
+
+    <section class="demo">
+      <h2>How It Works</h2>
+      <img src="assets/demo-screenshot.png" alt="StudySum Demo Screenshot" />
+    </section>
+
+    <section class="cta">
+      <h2>Ready to Try StudySum?</h2>
+      <p>Use StudySum today — no login required.</p>
+      <a href="index.html">Try StudySum Now →</a>
+    </section>
+  </div>
+
+  <footer>
+    StudySum – AI-powered summarizer for students<br/>
+    Built with ❤️ using HTML/CSS/AI<br/>
+    <a href="https://github.com/NyaguthiiMbona/studysum-webapp " target="_blank">GitHub</a> · 
+    <a href="mailto:your-email@example.com">Contact</a>
+  </footer>
+
+</body>
+</html>
