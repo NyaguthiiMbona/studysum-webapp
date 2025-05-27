@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>StudySum - AI Lecture Summarizer</title>
-  <meta name="description" content="Turn lecture transcripts into clean study notes instantly with StudySum. Export to Markdown, Word, or PDF.">
+  <meta name="description" content="Turn lecture transcripts into clean study notes instantly with StudySum. Export to Markdown, Word, or PDF. Free for students.">
 
   <!-- Favicon -->
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+  <link rel="manifest" href="assets/site.webmanifest">
+  <meta name="theme-color" content="#ffffff">
 
   <!-- CSS -->
   <style>
@@ -202,4 +207,204 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.browser/1
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth.browser/1.6.0/mammoth.browser.min.js "></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js "></script>
+
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const theme = body.getAttribute("data-theme");
+      body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
+    }
+
+    async function generateSummary() {
+      const transcript = document.getElementById("transcript").value;
+      const subject = document.getElementById("subjectSelect").value;
+      const summaryDiv = document.getElementById("summary");
+
+      if (!transcript) {
+        alert("Please paste a transcript first.");
+        return;
+      }
+
+      summaryDiv.innerText = "Generating summary using AI...";
+
+      // Enhanced prompting based on subject
+      let enhancedPrompt = "";
+
+      if (subject === "Biology" || subject === "Physics") {
+        enhancedPrompt = `Generate a bullet-point summary of this ${subject} lecture:\n\n${transcript}`;
+      } else if (subject === "History") {
+        enhancedPrompt = `Chronological summary of historical event:\n\n${transcript}`;
+      } else if (subject === "Computer Science") {
+        enhancedPrompt = `Explain the main concepts, code snippets, and logic:\n\n${transcript}`;
+      } else if (subject === "Math") {
+        enhancedPrompt = `Explain formulas and problems clearly:\n\n${transcript}`;
+      } else {
+        enhancedPrompt = `Create a structured summary in clear points:\n\nSubject: ${subject}\n\nTranscript:\n${transcript}`;
+      }
+
+      try {
+        const response = await fetch("https://studysum-backend-1.onrender.com/summarize ", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: enhancedPrompt, subject: subject })
+        });
+
+        const data = await response.json();
+        const formattedSummary = formatSummary(data.summary || "", subject);
+
+        summaryDiv.innerText = formattedSummary || fallbackSummary(transcript, subject);
+      } catch (error) {
+        console.error(error);
+        summaryDiv.innerText = fallbackSummary(transcript, subject);
+      }
+    }
+
+    function formatSummary(summary, subject) {
+      if (!summary) return "";
+      return `# ${subject} Summary\n\n📄 **Key Points:**\n\n${summary}`;
+    }
+
+    function fallbackSummary(text, subject) {
+      const sampleWords = text.split(" ").slice(0, 3).join(" ");
+      return `AI unavailable.\n\nFallback Summary:\n\nThis ${subject} lecture discusses topics like ${sampleWords}...\n\nTry again later.`;
+    }
+
+    // Copy to Clipboard
+    document.getElementById("copySummary").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+        alert("No summary available to copy.");
+        return;
+      }
+
+      navigator.clipboard.writeText(summaryText).then(() => {
+        showSuccessMessage("Summary copied to clipboard!");
+      }).catch(err => {
+        alert("Failed to copy summary.");
+        console.error(err);
+      });
+    });
+
+    // Export as Markdown
+    document.getElementById("exportMarkdown").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
+
+      const blob = new Blob([summaryText], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${document.getElementById("subjectSelect").value}_lecture_summary.md`;
+      a.click();
+    });
+
+    // Export as Word (.docx)
+    document.getElementById("exportWord").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
+
+      const docContent = `<h1>${document.getElementById("subjectSelect").value} Summary</h1><pre>${summaryText}</pre>`;
+      
+      mammoth.convertToDocx({
+        arrayBuffer: new TextEncoder().encode(docContent).buffer
+      }).then(result => {
+        const file = new Blob([result.value], {
+          type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(file);
+        a.download = `${document.getElementById("subjectSelect").value}_lecture_summary.docx`;
+        a.click();
+      }).catch(err => {
+        alert("Error generating Word file.");
+        console.error(err);
+      });
+    });
+
+    // Export as PDF
+    document.getElementById("exportPDF").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      const subject = document.getElementById("subjectSelect").value;
+
+      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+        alert("No summary available to export.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      const lines = summaryText.split("\n");
+
+      let y = 20;
+      lines.forEach(line => {
+        if (y > 270) {
+          pdf.addPage();
+          y = 20;
+        }
+        pdf.text(line, 10, y);
+        y += 10;
+      });
+
+      pdf.save(`${subject}_lecture_summary.pdf`);
+    });
+
+    // Create My Notes
+    document.getElementById("createNote").addEventListener("click", () => {
+      const summaryText = document.getElementById("summary").innerText;
+      const subject = document.getElementById("subjectSelect").value;
+
+      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+        alert("No summary available to create notes.");
+        return;
+      }
+
+      const noteContent = `# ${subject} Lecture Summary\n\n${summaryText}`;
+
+      const blob = new Blob([noteContent], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${subject}_study_note.txt`;
+      a.click();
+    });
+
+    // Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "Enter" || e.key === "s" || e.key === "c" || e.key === "p")) {
+        e.preventDefault();
+        if (e.key === "Enter") generateSummary();
+        if (e.key === "c") document.getElementById("copySummary").click();
+        if (e.key === "s") document.getElementById("createNote").click();
+        if (e.key === "p") document.getElementById("exportPDF").click();
+      }
+    });
+
+    // Success Toast
+    function showSuccessMessage(text) {
+      const success = document.createElement('div');
+      success.style.position = 'fixed';
+      success.style.top = '20px';
+      success.style.right = '20px';
+      success.style.background = 'rgba(74, 144, 226, 0.9)';
+      success.style.color = '#fff';
+      success.style.padding = '10px 20px';
+      success.style.borderRadius = '6px';
+      success.style.zIndex = '1000';
+      success.className = 'success';
+      success.innerText = text;
+
+      document.body.appendChild(success);
+
+      setTimeout(() => {
+        success.remove();
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
