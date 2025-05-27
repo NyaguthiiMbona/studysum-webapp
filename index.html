@@ -181,9 +181,9 @@
     </svg>
 
     <h1>StudySum</h1>
-    <p>Paste your lecture transcript below and get an AI-generated summary.</p>
+    <p>Paste your Zoom chat or transcript below and get an AI-generated summary.</p>
 
-    <textarea id="transcript" placeholder="Paste your lecture transcript here..."></textarea>
+    <textarea id="transcript" placeholder="Paste your Zoom chat or lecture transcript here..."></textarea>
     <br/>
     <label for="subjectSelect">Select Subject:</label>
     <select id="subjectSelect">
@@ -229,7 +229,7 @@
 
       summaryDiv.innerText = "Generating summary using AI...";
 
-      // Enhanced prompting based on subject
+      // Enhance prompt based on subject
       let enhancedPrompt = "";
 
       if (subject === "Biology" || subject === "Physics") {
@@ -237,7 +237,7 @@
       } else if (subject === "History") {
         enhancedPrompt = `Chronological summary of historical event:\n\n${transcript}`;
       } else if (subject === "Computer Science") {
-        enhancedPrompt = `Explain the main concepts, code snippets, and logic:\n\n${transcript}`;
+        enhancedPrompt = `Explain main concepts, code references, and logic from this CS lecture:\n\n${transcript}`;
       } else if (subject === "Math") {
         enhancedPrompt = `Explain formulas and problems clearly:\n\n${transcript}`;
       } else {
@@ -290,7 +290,7 @@
     // Export as Markdown
     document.getElementById("exportMarkdown").addEventListener("click", () => {
       const summaryText = document.getElementById("summary").innerText;
-      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+      if (!summaryText || summaryText === "Using AI to generate summary..." || summaryText.startsWith("Failed")) {
         alert("No summary available to export.");
         return;
       }
@@ -305,7 +305,7 @@
     // Export as Word (.docx)
     document.getElementById("exportWord").addEventListener("click", () => {
       const summaryText = document.getElementById("summary").innerText;
-      if (!summaryText || summaryText.startsWith("Using AI") || summaryText.startsWith("Failed")) {
+      if (!summaryText || summaryText === "Using AI to generate summary..." || summaryText.startsWith("Failed")) {
         alert("No summary available to export.");
         return;
       }
@@ -394,7 +394,7 @@
       success.style.background = 'rgba(74, 144, 226, 0.9)';
       success.style.color = '#fff';
       success.style.padding = '10px 20px';
-      success.style.borderRadius = '6px';
+      success.style.border-radius = '6px';
       success.style.zIndex = '1000';
       success.className = 'success';
       success.innerText = text;
