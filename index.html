@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>StudySum - AI Lecture Summarizer</title>
-  <meta name="description" content="Turn lecture transcripts into clean study notes instantly with StudySum. Export to Markdown, Word, or PDF. Free for students.">
+  <meta name="description" content="Turn Zoom lectures into clean study notes. Supports VTT/TXT uploads and exports to PDF/Word/MD.">
 
   <!-- Favicon -->
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
@@ -29,7 +29,7 @@
       --bg: #121212;
       --text: #f9f9f9;
       --card-bg: #1e1e1e;
-      --border: #333;
+      --accent: #5F50F0;
     }
 
     body {
@@ -132,12 +132,12 @@
       width: 200px;
       height: auto;
       margin-bottom: 1rem;
-      animation: bounce 2s infinite;
+      transition: transform 0.3s ease;
     }
 
-    @keyframes bounce {
-      0%, 100%   { transform: translateY(0); }
-      50%         { transform: translateY(-5px); }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     svg text {
@@ -152,7 +152,7 @@
   <div class="container">
 
     <!-- Embedded Animated Logo SVG -->
-    <svg class="logo" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+    <svg class="logo" id="appLogo" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" style="stop-color:#4A90E2; stop-opacity:1" />
@@ -181,7 +181,11 @@
     </svg>
 
     <h1>StudySum</h1>
-    <p>Paste your Zoom chat or transcript below and get an AI-generated summary.</p>
+    <p>Paste or upload your Zoom transcript (.vtt/.txt) and get an AI-generated summary.</p>
+
+    <!-- File Upload -->
+    <input type="file" id="fileUpload" accept=".txt,.vtt" onchange="handleFileUpload(event)">
+    <br/><br/>
 
     <textarea id="transcript" placeholder="Paste your Zoom chat or lecture transcript here..."></textarea>
     <br/>
@@ -217,58 +221,71 @@
       body.setAttribute("data-theme", theme === "light" ? "dark" : "light");
     }
 
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById("transcript").value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+
     async function generateSummary() {
       const transcript = document.getElementById("transcript").value;
       const subject = document.getElementById("subjectSelect").value;
       const summaryDiv = document.getElementById("summary");
+      const logo = document.getElementById("appLogo");
 
       if (!transcript) {
-        alert("Please paste a transcript first.");
+        alert("Please paste or upload a transcript first.");
         return;
       }
 
-      summaryDiv.innerText = "Generating summary using AI...";
-
-      // Enhance prompt based on subject
-      let enhancedPrompt = "";
-
-      if (subject === "Biology" || subject === "Physics") {
-        enhancedPrompt = `Generate a bullet-point summary of this ${subject} lecture:\n\n${transcript}`;
-      } else if (subject === "History") {
-        enhancedPrompt = `Chronological summary of historical event:\n\n${transcript}`;
-      } else if (subject === "Computer Science") {
-        enhancedPrompt = `Explain main concepts, code references, and logic from this CS lecture:\n\n${transcript}`;
-      } else if (subject === "Math") {
-        enhancedPrompt = `Explain formulas and problems clearly:\n\n${transcript}`;
-      } else {
-        enhancedPrompt = `Create a structured summary in clear points:\n\nSubject: ${subject}\n\nTranscript:\n${transcript}`;
-      }
+      // Show loading spinner
+      summaryDiv.innerText = "🧠 Generating summary using AI... Please wait.";
+      logo.style.animation = "spin 2s linear infinite";
 
       try {
-        const response = await fetch("https://studysum-backend-1.onrender.com/summarize ", {
+        const response = await fetch("https://your-backend-url.onrender.com/summarize ", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: enhancedPrompt, subject: subject })
+          body: JSON.stringify({ text: transcript, subject: subject })
         });
 
         const data = await response.json();
-        const formattedSummary = formatSummary(data.summary || "", subject);
 
-        summaryDiv.innerText = formattedSummary || fallbackSummary(transcript, subject);
+        // Stop spinner
+        logo.style.animation = "";
+        logo.style.transform = "rotate(0deg)";
+
+        if (!data.summary || data.summary.trim().length < 10) {
+          summaryDiv.innerHTML = `
+            ❌ Could not generate full summary.<br><br>
+            Try again with a shorter transcript or better formatting.
+          `;
+          return;
+        }
+
+        summaryDiv.innerText = data.summary;
       } catch (error) {
         console.error(error);
-        summaryDiv.innerText = fallbackSummary(transcript, subject);
+
+        // Stop spinner
+        logo.style.animation = "";
+        logo.style.transform = "rotate(0deg)";
+        
+        summaryDiv.innerHTML = `
+          ❌ Could not get summary.<br><br>
+          <strong>Error:</strong> ${error.message}<br><br>
+          <strong>Tips:</strong><br>
+          - Make sure internet is working<br>
+          - Paste more detailed transcript<br>
+          - Try again later<br><br>
+          <button onclick="generateSummary()" style="background:#4A90E2;">Try Again</button>
+        `;
       }
-    }
-
-    function formatSummary(summary, subject) {
-      if (!summary) return "";
-      return `# ${subject} Summary\n\n📄 **Key Points:**\n\n${summary}`;
-    }
-
-    function fallbackSummary(text, subject) {
-      const sampleWords = text.split(" ").slice(0, 3).join(" ");
-      return `AI unavailable.\n\nFallback Summary:\n\nThis ${subject} lecture discusses topics like ${sampleWords}...\n\nTry again later.`;
     }
 
     // Copy to Clipboard
