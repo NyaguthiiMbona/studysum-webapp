@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>StudySum – Lecture Summarizer</title>
-  <meta name="description" content="Turn lectures into study notes instantly.">
-
+  <title>StudySum – Lecture Tools</title>
   <style>
     :root {
       --bg: #f0f7ff;
@@ -13,7 +11,6 @@
       --accent: #4A90E2;
       --card-bg: #ffffff;
       --border: #d0e0f0;
-      --blue-tint: #e6f0fb;
     }
 
     [data-theme="dark"] {
@@ -28,22 +25,43 @@
       font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
-      transition: background 0.3s, color 0.3s;
+      transition: all 0.3s;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 2rem auto;
       padding: 2rem;
       background: var(--card-bg);
       border-radius: 12px;
       box-shadow: 0 0 20px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
     }
 
-    h1 {
-      color: var(--accent);
-      margin-bottom: 0.5rem;
+    .tab-buttons {
+      display: flex;
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--bg);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     textarea {
@@ -54,6 +72,7 @@
       border-radius: 8px;
       resize: vertical;
       font-family: inherit;
+      margin-bottom: 1rem;
     }
 
     button {
@@ -63,20 +82,45 @@
       padding: 0.75rem 1.5rem;
       border-radius: 6px;
       cursor: pointer;
-      margin-top: 1rem;
-      font-size: 1rem;
+      margin-right: 0.5rem;
     }
 
-    button:hover {
-      opacity: 0.9;
-    }
-
-    #summary {
+    #output {
       margin-top: 2rem;
       padding: 1.5rem;
-      background: var(--blue-tint);
+      background: rgba(74, 144, 226, 0.1);
       border-radius: 8px;
-      line-height: 1.6;
+    }
+
+    .flashcard {
+      background: white;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .flashcard:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .flashcard .question {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .flashcard .answer {
+      display: none;
+      padding-top: 0.5rem;
+      border-top: 1px dashed #ccc;
+    }
+
+    .flashcard.show-answer .answer {
+      display: block;
     }
 
     .loading {
@@ -114,74 +158,180 @@
     }
   </style>
 </head>
-<body data-theme="light">
+<body>
   <div class="container">
-    <h1>Lecture Summarizer</h1>
-    <p>Paste your lecture content below to generate a concise summary</p>
+    <h1>StudySum</h1>
+    <p>Transform lectures into study tools</p>
     
-    <textarea id="lectureText" placeholder="Paste your lecture transcript here..."></textarea>
-    <br>
-    <button id="summarizeBtn">Summarize</button>
+    <div class="tab-buttons">
+      <button class="tab-btn active" data-tab="summary">Summary</button>
+      <button class="tab-btn" data-tab="notes">Notes</button>
+      <button class="tab-btn" data-tab="flashcards">Flashcards</button>
+    </div>
     
-    <div id="summary" style="display: none;">
-      <h3>Summary</h3>
-      <div id="summaryContent"></div>
+    <div class="tab-content active" id="summary-tab">
+      <textarea id="lectureText" placeholder="Paste lecture content here..."></textarea>
+      <button id="summarizeBtn">Generate Summary</button>
+      <div id="summaryOutput" class="output"></div>
+    </div>
+    
+    <div class="tab-content" id="notes-tab">
+      <textarea id="notesText" placeholder="Paste content for notes..."></textarea>
+      <button id="generateNotesBtn">Generate Notes</button>
+      <select id="notesStyle">
+        <option value="bullet">Bullet Points</option>
+        <option value="outline">Outline</option>
+        <option value="cornell">Cornell Notes</option>
+      </select>
+      <div id="notesOutput" class="output"></div>
+    </div>
+    
+    <div class="tab-content" id="flashcards-tab">
+      <textarea id="flashcardText" placeholder="Paste content for flashcards..."></textarea>
+      <button id="generateFlashcardsBtn">Generate Flashcards</button>
+      <div id="flashcardsOutput" class="output"></div>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const summarizeBtn = document.getElementById('summarizeBtn');
-      const lectureText = document.getElementById('lectureText');
-      const summaryDiv = document.getElementById('summary');
-      const summaryContent = document.getElementById('summaryContent');
+      // Tab switching
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`${this.dataset.tab}-tab`).classList.add('active');
+        });
+      });
 
-      summarizeBtn.addEventListener('click', function() {
-        const text = lectureText.value.trim();
+      // Summary Generator
+      document.getElementById('summarizeBtn').addEventListener('click', generateSummary);
+      
+      // Notes Generator
+      document.getElementById('generateNotesBtn').addEventListener('click', generateNotes);
+      
+      // Flashcards Generator
+      document.getElementById('generateFlashcardsBtn').addEventListener('click', generateFlashcards);
+
+      function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      function setLoading(btn, isLoading) {
+        if (isLoading) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="loading"></span> Processing...';
+        } else {
+          btn.disabled = false;
+          btn.textContent = btn.id.includes('summarize') ? 'Generate Summary' : 
+                           btn.id.includes('Notes') ? 'Generate Notes' : 'Generate Flashcards';
+        }
+      }
+
+      function generateSummary() {
+        const text = document.getElementById('lectureText').value.trim();
+        const output = document.getElementById('summaryOutput');
         
         if (!text) {
-          showToast('Please enter some lecture content first');
+          showToast('Please enter lecture content');
           return;
         }
 
-        // Show loading state
-        summarizeBtn.disabled = true;
-        summarizeBtn.innerHTML = '<span class="loading"></span> Processing...';
-        summaryDiv.style.display = 'none';
+        setLoading(document.getElementById('summarizeBtn'), true);
+        output.innerHTML = '';
 
-        // Process the text (simple client-side summarization)
         setTimeout(() => {
           try {
             const summary = summarizeText(text);
-            summaryContent.innerHTML = formatSummary(summary);
-            summaryDiv.style.display = 'block';
-            showToast('Summary generated successfully!');
+            output.innerHTML = `<h3>Summary</h3><div style="white-space: pre-wrap;">${summary}</div>`;
+            showToast('Summary generated!');
           } catch (error) {
-            console.error('Summarization error:', error);
-            showToast('Error generating summary');
+            output.innerHTML = '<p>Error generating summary</p>';
+            console.error(error);
           } finally {
-            summarizeBtn.disabled = false;
-            summarizeBtn.textContent = 'Summarize';
+            setLoading(document.getElementById('summarizeBtn'), false);
+          }
+        }, 800);
+      }
+
+      function generateNotes() {
+        const text = document.getElementById('notesText').value.trim();
+        const style = document.getElementById('notesStyle').value;
+        const output = document.getElementById('notesOutput');
+        
+        if (!text) {
+          showToast('Please enter content for notes');
+          return;
+        }
+
+        setLoading(document.getElementById('generateNotesBtn'), true);
+        output.innerHTML = '';
+
+        setTimeout(() => {
+          try {
+            const notes = createNotes(text, style);
+            output.innerHTML = `<h3>Study Notes</h3><div style="white-space: pre-wrap;">${notes}</div>`;
+            showToast('Notes generated!');
+          } catch (error) {
+            output.innerHTML = '<p>Error generating notes</p>';
+            console.error(error);
+          } finally {
+            setLoading(document.getElementById('generateNotesBtn'), false);
+          }
+        }, 800);
+      }
+
+      function generateFlashcards() {
+        const text = document.getElementById('flashcardText').value.trim();
+        const output = document.getElementById('flashcardsOutput');
+        
+        if (!text) {
+          showToast('Please enter content for flashcards');
+          return;
+        }
+
+        setLoading(document.getElementById('generateFlashcardsBtn'), true);
+        output.innerHTML = '';
+
+        setTimeout(() => {
+          try {
+            const flashcards = createFlashcards(text);
+            output.innerHTML = `<h3>Flashcards</h3><p>Click each card to reveal answer</p>${flashcards}`;
+            // Add click handlers for flashcards
+            document.querySelectorAll('.flashcard').forEach(card => {
+              card.addEventListener('click', function() {
+                this.classList.toggle('show-answer');
+              });
+            });
+            showToast('Flashcards generated!');
+          } catch (error) {
+            output.innerHTML = '<p>Error generating flashcards</p>';
+            console.error(error);
+          } finally {
+            setLoading(document.getElementById('generateFlashcardsBtn'), false);
           }
         }, 1000);
-      });
+      }
 
+      // Processing functions
       function summarizeText(text) {
-        // Simple summarization algorithm:
-        // 1. Split into sentences
-        // 2. Score sentences by length (mid-length sentences tend to be most important)
-        // 3. Select top sentences
-        
         const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
         
         if (sentences.length <= 5) {
-          // If text is already short, just return it with bullet points
           return sentences.map(s => `• ${s.trim()}`).join('\n');
         }
         
-        // Score sentences (middle sentences get higher scores)
         const scored = sentences.map((sentence, index) => {
-          const lengthScore = Math.min(1, sentence.length / 100); // Normalize length
+          const lengthScore = Math.min(1, sentence.length / 100);
           const positionScore = 1 - Math.abs(0.5 - (index / sentences.length)) * 2;
           return {
             text: sentence.trim(),
@@ -189,28 +339,71 @@
           };
         });
         
-        // Sort by score and take top 30%
         const topSentences = scored.sort((a, b) => b.score - a.score)
                                   .slice(0, Math.max(3, Math.floor(sentences.length * 0.3)));
         
-        // Return as bullet points
         return topSentences.map(item => `• ${item.text}`).join('\n');
       }
 
-      function formatSummary(summary) {
-        // Add some basic formatting
-        return `<div style="white-space: pre-wrap;">${summary}</div>`;
+      function createNotes(text, style) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        
+        if (style === 'bullet') {
+          return sentences.map(s => `• ${s.trim()}`).join('\n');
+        } 
+        else if (style === 'outline') {
+          let outline = '';
+          let currentLevel = 1;
+          sentences.forEach((sentence, i) => {
+            if (i % 5 === 0) {
+              outline += `${'  '.repeat(currentLevel-1)}${currentLevel}. ${sentence.trim()}\n`;
+              currentLevel++;
+            } else {
+              outline += `${'  '.repeat(currentLevel-1)}- ${sentence.trim()}\n`;
+            }
+          });
+          return outline;
+        } 
+        else { // Cornell
+          const keyPoints = sentences.filter((_, i) => i % 3 === 0).map(s => s.trim());
+          const details = sentences.filter((_, i) => i % 3 !== 0).map(s => s.trim());
+          
+          return `=== Key Points ===\n${keyPoints.map(k => `• ${k}`).join('\n')}
+                  
+=== Details ===\n${details.map(d => `- ${d}`).join('\n')}
+                  
+=== Summary ===\n${sentences.slice(0, 3).map(s => s.trim()).join(' ')}...`;
+        }
       }
 
-      function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
+      function createFlashcards(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        let flashcardsHTML = '';
         
-        setTimeout(() => {
-          toast.remove();
-        }, 3000);
+        // Create question-answer pairs from sentences
+        for (let i = 0; i < sentences.length - 1; i += 2) {
+          const question = sentences[i].trim();
+          const answer = sentences[i+1].trim();
+          
+          flashcardsHTML += `
+            <div class="flashcard">
+              <div class="question">Q: ${question}?</div>
+              <div class="answer">A: ${answer}</div>
+            </div>
+          `;
+        }
+        
+        // If odd number of sentences, use last one as question
+        if (sentences.length % 2 !== 0) {
+          flashcardsHTML += `
+            <div class="flashcard">
+              <div class="question">Q: ${sentences[sentences.length-1].trim()}?</div>
+              <div class="answer">(Think about this concept)</div>
+            </div>
+          `;
+        }
+        
+        return flashcardsHTML;
       }
     });
   </script>
