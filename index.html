@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudySum - Lecture Tools</title>
+  <title>StudySum Pro - Lecture Tools</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -75,10 +75,10 @@
 
     .file-upload {
       margin: 20px 0;
-    }
-
-    .export-buttons {
-      margin-top: 20px;
+      padding: 15px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      text-align: center;
     }
 
     .loading {
@@ -95,11 +95,55 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 4px;
+      z-index: 1000;
+      animation: fadeInOut 3s;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .flashcard {
+      background: white;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
+    .flashcard .question {
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .flashcard .answer {
+      display: none;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed #ccc;
+    }
+
+    .flashcard.show-answer .answer {
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>StudySum</h1>
+    <h1>StudySum Pro</h1>
     <p>Transform lectures into study materials</p>
 
     <div class="file-upload">
@@ -187,6 +231,62 @@
         }, 800);
       });
 
+      // Generate Notes
+      document.getElementById('generateNotesBtn').addEventListener('click', function() {
+        const text = document.getElementById('lectureText').value.trim();
+        if (!text) {
+          showToast('Please enter or upload lecture content');
+          return;
+        }
+        
+        setLoading(this, true);
+        setTimeout(() => {
+          try {
+            const notes = generateNotes(text);
+            displayOutput(`
+              <h4>Study Notes</h4>
+              <div style="white-space: pre-wrap;">${notes}</div>
+            `);
+          } catch (error) {
+            displayOutput('<p>Error generating notes</p>');
+          } finally {
+            setLoading(this, false);
+          }
+        }, 800);
+      });
+
+      // Generate Flashcards
+      document.getElementById('generateFlashcardsBtn').addEventListener('click', function() {
+        const text = document.getElementById('lectureText').value.trim();
+        if (!text) {
+          showToast('Please enter or upload lecture content');
+          return;
+        }
+        
+        setLoading(this, true);
+        setTimeout(() => {
+          try {
+            const flashcards = generateFlashcards(text);
+            displayOutput(`
+              <h4>Flashcards</h4>
+              <p>Click each card to reveal answer</p>
+              ${flashcards}
+            `);
+            
+            // Add click handlers for flashcards
+            document.querySelectorAll('.flashcard').forEach(card => {
+              card.addEventListener('click', function() {
+                this.classList.toggle('show-answer');
+              });
+            });
+          } catch (error) {
+            displayOutput('<p>Error generating flashcards</p>');
+          } finally {
+            setLoading(this, false);
+          }
+        }, 1000);
+      });
+
       // Export as Word
       document.getElementById('exportWord').addEventListener('click', function() {
         const content = document.getElementById('outputContent').innerHTML;
@@ -238,6 +338,39 @@
                      .join('\n');
       }
 
+      function generateNotes(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        return sentences.map(s => `• ${s.trim()}`).join('\n');
+      }
+
+      function generateFlashcards(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        let flashcardsHTML = '';
+        
+        for (let i = 0; i < sentences.length - 1; i += 2) {
+          const question = sentences[i].trim();
+          const answer = sentences[i+1].trim();
+          
+          flashcardsHTML += `
+            <div class="flashcard">
+              <div class="question">Q: ${question}?</div>
+              <div class="answer">A: ${answer}</div>
+            </div>
+          `;
+        }
+        
+        if (sentences.length % 2 !== 0) {
+          flashcardsHTML += `
+            <div class="flashcard">
+              <div class="question">Q: ${sentences[sentences.length-1].trim()}?</div>
+              <div class="answer">(Think about this concept)</div>
+            </div>
+          `;
+        }
+        
+        return flashcardsHTML;
+      }
+
       function displayOutput(html) {
         document.getElementById('outputContent').innerHTML = html;
       }
@@ -249,17 +382,9 @@
 
       function showToast(message) {
         const toast = document.createElement('div');
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.right = '20px';
-        toast.style.backgroundColor = 'var(--accent)';
-        toast.style.color = 'white';
-        toast.style.padding = '12px 24px';
-        toast.style.borderRadius = '4px';
-        toast.style.zIndex = '1000';
+        toast.className = 'toast';
         toast.textContent = message;
         document.body.appendChild(toast);
-        
         setTimeout(() => toast.remove(), 3000);
       }
 
