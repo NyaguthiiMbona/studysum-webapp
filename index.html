@@ -329,7 +329,7 @@
         const scored = sentences.map((sentence, index) => ({
           text: sentence.trim(),
           score: Math.min(1, sentence.length / 100) + 
-                (1 - Math.abs(0.5 - (index / sentences.length)) * 2
+                (1 - Math.abs(0.5 - (index / sentences.length)) * 2)
         }));
         
         return scored.sort((a, b) => b.score - a.score)
